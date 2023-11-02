@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:scrollbars="none"
+    android:id="@+id/root"
+    android:background="#edefe3"
+    android:fitsSystemWindows="true"
+    tools:context=".personalChat">
+<Toolbar
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/toolbar"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    android:fitsSystemWindows="true"
+    android:background="#edefe3">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:id="@+id/backButton"
+            android:src="@drawable/ic_baseline_arrow_back_ios_24" />
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_centerVertical="true"
+            android:id="@+id/profilePic"
+            app:civ_border_color="#edefe3"
+            android:src="@drawable/baseline_person_24"
+            android:tint="#292a60"
+            app:civ_border_width="1dp"
+            android:layout_toRightOf="@id/backButton"
+            />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:orientation="vertical"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@id/profilePic">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your Name"
+            android:fontFamily="@font/brand_font"
+            android:textSize="20dp"
+            android:id="@+id/name"
+            android:textStyle="bold"
+            android:textColor="#292a60"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#292a60"
+            android:layout_below="@id/name"
+            android:id="@+id/status"
+            android:text="online"
+            />
+        </LinearLayout>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/outline_call_24"
+            app:tint="#292a60"
+            android:layout_toLeftOf="@id/popup"
+            android:layout_marginEnd="8dp"
+            android:layout_centerVertical="true"
+            />
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?android:actionOverflowButtonStyle"
+            android:layout_alignParentEnd="true"
+            app:tint="#292a60"
+            android:layout_centerVertical="true"
+            android:id="@+id/popup"
+            />
+    </RelativeLayout>
+</Toolbar>
+    <View
+        android:layout_width="wrap_content"
+        android:layout_height="1dp"
+        android:background="#23292A60"
+        android:id="@+id/toolbarView"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:background="#edefe3"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:id="@+id/recyclerView"
+        app:layout_constraintTop_toBottomOf="@id/toolbarView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/view"
+        android:layout_marginBottom="4dp"
+        />
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:id="@+id/progressBar"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <View
+        android:id="@+id/view"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#e0e0e0"
+        app:layout_constraintBottom_toTopOf="@id/layoutChatBox" />
+
+    <RelativeLayout
+        android:id="@+id/layoutChatBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/baseline_emoji_emotions_24"
+            android:background="@color/white"
+            android:layout_centerVertical="true"
+            app:tint="@color/red"
+            android:backgroundTint="#edefe3"
+            android:paddingStart="8dp"
+            android:paddingEnd="16dp"
+            android:layout_alignParentStart="true"
+            android:id="@+id/emojiButton"/>
+
+        <com.vanniktech.emoji.EmojiEditText
+            android:id="@+id/messageBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@id/emojiButton"
+            android:layout_toLeftOf="@id/attach"
+            android:background="@android:color/transparent"
+            android:fontFamily="@font/brand_font"
+            android:hint="Enter Message"
+            android:maxLines="6"/>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/attach"
+            android:src="@drawable/baseline_attachment_24"
+            android:layout_toStartOf="@+id/send"
+            android:layout_centerVertical="true"
+            app:tint="#191b54"
+            />
+
+        <ImageButton
+            android:id="@+id/send"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentEnd="true"
+            android:backgroundTint="#edefe3"
+            android:background="@color/white"
+            android:src="@drawable/baseline_send_24"
+            app:tint="#191b54"/>
+
+    </RelativeLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

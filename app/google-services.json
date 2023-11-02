@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "843583529785",
+    "firebase_url": "https://we-chat-f2ff5-default-rtdb.firebaseio.com",
+    "project_id": "we-chat-f2ff5",
+    "storage_bucket": "we-chat-f2ff5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:843583529785:android:b165de5a7cc5f3e7823ee8",
+        "android_client_info": {
+          "package_name": "com.example.wechat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDS6pwK6Yf0eQTj3oFLcZVxZF3R_x4nLlw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
