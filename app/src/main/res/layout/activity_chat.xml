@@ -22,11 +22,12 @@
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/profilePic"
+        android:scaleType="centerCrop"
         android:layout_width="35dp"
         android:layout_height="35dp"
         android:layout_marginStart="20dp"
         android:layout_centerVertical="true"
-        android:src="@drawable/baseline_person_24"
+        android:src="@drawable/deafult_dp"
         app:civ_border_width="0.2dp"
         android:layout_marginEnd="20dp"
         app:civ_border_color="@color/red"
@@ -54,7 +55,7 @@
         android:contentDescription="TODO"
         android:elevation="2dp"
         app:fabCustomSize="40dp"
-        app:tint="@color/red"
+        app:tint="@color/black"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.97"
@@ -81,5 +82,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/view" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Your chats will appear here "
+        android:textSize="18sp"
+        android:id="@+id/emptyText"
+        android:textColor="#959393"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,6 +5,7 @@ public class chats {
     String msgId,msgReceiver,msgSender,msgTime,msgType,msgValue;
     String hasSeen;
 
+
     public chats() {
     }
 

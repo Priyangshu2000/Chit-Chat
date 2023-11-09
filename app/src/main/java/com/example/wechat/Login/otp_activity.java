@@ -6,10 +6,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Toast;
+import android.window.OnBackInvokedDispatcher;
 
 import com.example.wechat.Chat;
 import com.example.wechat.FirebaseModelClass.user;
+import com.example.wechat.MainActivity;
 import com.example.wechat.databinding.ActivityOtpBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -28,16 +31,16 @@ import java.util.concurrent.TimeUnit;
 public class otp_activity extends AppCompatActivity {
 
     ActivityOtpBinding otpActivity;
-    String phone,countryCode,fullNumber, OTPId;
+    String phone, countryCode, fullNumber, OTPId;
     FirebaseAuth mAuth;
 
 
-    private String DEFAULT_PROFILE_PIC="https://firebasestorage.googleapis.com/v0/b/we-chat-f2ff5.appspot.com/o/Basic_Ui_(186).jpg?alt=media&token=c5c09d68-8db5-4b7c-ad06-bec4f9f6f3a7&_gl=1*1uryhfc*_ga*MTExMDcxMTcwLjE2OTgyOTYxMTE.*_ga_CW55HF8NVT*MTY5ODM4NDIxMy41LjEuMTY5ODM4NjU2My40My4wLjA.";
+    private String DEFAULT_PROFILE_PIC = "https://firebasestorage.googleapis.com/v0/b/we-chat-f2ff5.appspot.com/o/Basic_Ui_(186).jpg?alt=media&token=c5c09d68-8db5-4b7c-ad06-bec4f9f6f3a7&_gl=1*1uryhfc*_ga*MTExMDcxMTcwLjE2OTgyOTYxMTE.*_ga_CW55HF8NVT*MTY5ODM4NDIxMy41LjEuMTY5ODM4NjU2My40My4wLjA.";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        otpActivity=ActivityOtpBinding.inflate(getLayoutInflater());
+        otpActivity = ActivityOtpBinding.inflate(getLayoutInflater());
         setContentView(otpActivity.getRoot());
 
         getDataFromPrevActivity();
@@ -48,20 +51,21 @@ public class otp_activity extends AppCompatActivity {
     }
 
     private void recieveOTP() {
-        mAuth= FirebaseAuth.getInstance();
+        mAuth = FirebaseAuth.getInstance();
         PhoneAuthOptions options =
                 PhoneAuthOptions.newBuilder(mAuth)
-                        .setPhoneNumber("+"+fullNumber)
+                        .setPhoneNumber("+" + fullNumber)
                         .setTimeout(30L, TimeUnit.SECONDS)
                         .setActivity(this)
-                        .setCallbacks( new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+                        .setCallbacks(new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
                             @Override
                             public void onCodeSent(@NonNull String verificationId,
                                                    @NonNull PhoneAuthProvider.ForceResendingToken token) {
-                                OTPId=verificationId;
-                                Toast.makeText(otp_activity.this, "Code sent", Toast.LENGTH_SHORT).show();
+                                OTPId = verificationId;
+                                Toast.makeText(otp_activity.this, "Verified successfully and Otp Sent", Toast.LENGTH_SHORT).show();
 
                             }
+
                             @Override
                             public void onVerificationCompleted(@NonNull PhoneAuthCredential credential) {
                                 Toast.makeText(otp_activity.this, "Verification Completed", Toast.LENGTH_SHORT).show();
@@ -81,20 +85,27 @@ public class otp_activity extends AppCompatActivity {
         mAuth.signInWithCredential(credential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
-                if(task.isSuccessful()){
-                        FirebaseUser user=task.getResult().getUser();
-                        long creationTime=user.getMetadata().getCreationTimestamp();
-                        long lastLoginTime=user.getMetadata().getLastSignInTimestamp();
-                        if(creationTime==lastLoginTime)
-                            sendDataToFirebase();
-                        else{
-                            startActivity(new Intent(otp_activity.this, Chat.class));
-                            finish();
-                        }
+                if (task.isSuccessful()) {
+                    FirebaseUser user = task.getResult().getUser();
+                    long creationTime = user.getMetadata().getCreationTimestamp();
+                    long lastLoginTime = user.getMetadata().getLastSignInTimestamp();
+                    if (creationTime == lastLoginTime)
+                        sendDataToFirebase();
+                    else {
+                        Intent intent=new Intent(otp_activity.this, Chat.class);
+                        intent.putExtra("activity","otp_activity");
+                        startActivity(intent);
+                        otpActivity.progressBar.setVisibility(View.GONE);
+                        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                        finish();
+                    }
 
 
-                }else{
-                    Toast.makeText(otp_activity.this, "Login Failed", Toast.LENGTH_SHORT).show();
+                } else {
+                    otpActivity.progressBar.setVisibility(View.GONE);
+                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                    Toast.makeText(otp_activity.this, "Login Failed" + task.getException(), Toast.LENGTH_SHORT).show();
+
                 }
             }
         });
@@ -103,45 +114,62 @@ public class otp_activity extends AppCompatActivity {
 
     private void sendDataToFirebase() {
 
-        FirebaseDatabase database=FirebaseDatabase.getInstance();
-        DatabaseReference reference=database.getReference("Users").child(fullNumber);
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference reference = database.getReference("Users").child(fullNumber);
 
-        Toast.makeText(this, reference.toString(), Toast.LENGTH_LONG).show();
+//        Toast.makeText(this, reference.toString(), Toast.LENGTH_LONG).show();
 
-        user u=new user(phone,phone, DEFAULT_PROFILE_PIC,String.valueOf(System.currentTimeMillis()),false);
+        user u = new user(phone, DEFAULT_PROFILE_PIC, String.valueOf(System.currentTimeMillis()), phone, "not specified", false);
 
         reference.setValue(u);
-        startActivity(new Intent(otp_activity.this, Chat.class));
+        Intent intent=new Intent(otp_activity.this, Chat.class);
+        intent.putExtra("activity","otp_activity");
+        startActivity(intent);
         finish();
 
     }
 
     private void setData() {
-        String text="Please enter the verification code send to +"+fullNumber.substring(0,4)+"xxxxxx"+fullNumber.charAt(10)+fullNumber.charAt(11);
+        String text = "Please enter the verification code send to +" + fullNumber.substring(0, 4) + "xxxxxx" + fullNumber.charAt(10) + fullNumber.charAt(11);
         otpActivity.phoneNumberText.setText(text);
     }
 
-    void onClickListener(){
+    void onClickListener() {
         otpActivity.submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String OTP=otpActivity.otpView.getOtp();
-                if(OTP.isEmpty()){
+
+
+                String OTP = otpActivity.otpView.getOtp();
+                if (OTP.isEmpty()) {
                     Toast.makeText(otp_activity.this, "Invalid OTP", Toast.LENGTH_SHORT).show();
-                }else{
-                PhoneAuthCredential credential=PhoneAuthProvider.getCredential(OTPId,OTP);
-                signInWithPhoneAuthCredential(credential);
+                } else {
+                    getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                    otpActivity.progressBar.setVisibility(View.VISIBLE);
+                    PhoneAuthCredential credential = PhoneAuthProvider.getCredential(OTPId, OTP);
+                    signInWithPhoneAuthCredential(credential);
                 }
             }
         });
     }
 
-    void getDataFromPrevActivity(){
-        Intent otpIntent=getIntent();
-        phone=otpIntent.getStringExtra("phoneNumber");
-        countryCode=otpIntent.getStringExtra("countryCode");
-        fullNumber=countryCode+phone;
+    void getDataFromPrevActivity() {
+        Intent otpIntent = getIntent();
+        phone = otpIntent.getStringExtra("phoneNumber");
+        countryCode = otpIntent.getStringExtra("countryCode");
+        fullNumber = countryCode + phone;
     }
+
+    @NonNull
+    @Override
+    public OnBackInvokedDispatcher getOnBackInvokedDispatcher() {
+        Intent mainIntent=new Intent(otp_activity.this,MainActivity.class);
+        startActivity(mainIntent);
+        finish();
+        return super.getOnBackInvokedDispatcher();
+    }
+
+
 
 
 }

@@ -23,11 +23,15 @@ public class MainActivity extends AppCompatActivity {
         mainActivity=ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mainActivity.getRoot());
 
+
+
         mAuth=FirebaseAuth.getInstance();
         if(mAuth.getCurrentUser()!=null){
             startActivity(new Intent(MainActivity.this, Chat.class));
             finish();
         }
+
+//       KeyHelper.get(this,"SHA1");
 
         onClickListener();
     }
@@ -47,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
                     otpIntent.putExtra("phoneNumber",phone);
                     otpIntent.putExtra("countryCode",countryCode);
                     startActivity(otpIntent);
+                    finish();
+
                 }else{
                     Toast.makeText(MainActivity.this, "Please enter a valid mobile number", Toast.LENGTH_SHORT).show();
                 }

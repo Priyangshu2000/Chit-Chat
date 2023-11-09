@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/hideChat"
+        android:title="Hide Chat"/>
+    <item
+        android:id="@+id/showChat"
+        android:title="Show Chat"/>
+
+    <item
+        android:id="@+id/viewContact"
+        android:title="View Contact"
+        />
+
+
+</menu>

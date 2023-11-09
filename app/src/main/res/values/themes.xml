@@ -14,6 +14,10 @@
         <!-- Status bar color. -->
         <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+
+        <item name="android:itemBackground">#E3EFEB</item>
+        <item name="android:textColor">@color/black</item>
+
         <!-- Customize your theme here. -->
     </style>
 </resources>

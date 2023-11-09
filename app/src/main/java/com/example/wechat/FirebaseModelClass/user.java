@@ -2,6 +2,25 @@ package com.example.wechat.FirebaseModelClass;
 
 public class user {
     String phone,profilePic,lastSeen,name;
+    String fcmToken;
+
+    public user(String phone, String profilePic, String lastSeen, String name, String fcmToken, Boolean online) {
+        this.phone = phone;
+        this.profilePic = profilePic;
+        this.lastSeen = lastSeen;
+        this.name = name;
+        this.fcmToken = fcmToken;
+        this.online = online;
+    }
+
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
+    }
+
     Boolean online;
 
     public String getName() {
@@ -49,13 +68,6 @@ public class user {
     public user() {
     }
 
-    public user(String name,String phone, String profilePic, String lastSeen, Boolean isOnline) {
-        this.name=name;
-        this.phone = phone;
-        this.profilePic = profilePic;
-        this.lastSeen = lastSeen;
-        this.online = isOnline;
-    }
 }
 
 

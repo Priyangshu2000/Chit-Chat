@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".FriendProfile"
+    android:background="#3BEAEAEA"
+    android:padding="10dp"
+    >
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10sp"
+        app:cardCornerRadius="10dp"
+        app:strokeColor="#70000000"
+        android:id="@+id/profileCard">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_baseline_arrow_back_ios_24"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginStart="10dp"
+                android:id="@+id/backButton"
+                />
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/deafult_dp"
+        android:id="@+id/profilePic"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/profilePic"
+        android:layout_centerHorizontal="true"
+        android:text="Elizabeth Nelson"
+        android:textSize="25sp"
+        android:id="@+id/userName"
+        android:fontFamily="@font/brand_font"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/phoneNumber"
+        android:layout_centerHorizontal="true"
+        android:text="My status goes like this"
+        android:textSize="17sp"
+        android:textColor="#AEA9A9"
+        android:id="@+id/userBio"
+        android:fontFamily="@font/brand_font"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/userName"
+        android:layout_centerHorizontal="true"
+        android:text="+91-8670303055"
+        android:textSize="17sp"
+        android:textColor="#454343"
+        android:id="@+id/phoneNumber"
+        android:fontFamily="@font/brand_font"
+        />
+
+        </RelativeLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10sp"
+        app:cardCornerRadius="10dp"
+        android:id="@+id/callMsg"
+        app:strokeColor="#70000000"
+        android:layout_below="@id/profileCard"
+        >
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:padding="10dp">
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_margin="10dp"
+                app:tint="@color/red"
+                android:id="@+id/msg"
+                android:src="@drawable/baseline_message_24"
+                />
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_margin="10dp"
+                app:tint="@color/red"
+                android:id="@+id/call"
+                android:src="@drawable/baseline_call_24"
+                />
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10sp"
+        app:cardCornerRadius="10dp"
+        app:strokeColor="#70000000"
+        android:layout_below="@id/callMsg"
+        >
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp">
+            <TextView
+                android:layout_width="match_parent"
+                android:textSize="17sp"
+                android:layout_height="wrap_content"
+                android:id="@+id/media"
+                android:textColor="@color/red"
+                android:drawableTint="@color/red"
+                android:drawableEnd="@drawable/baseline_arrow_forward_ios_24"
+                android:text="Media "/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/mediaRecycler"
+            android:orientation="horizontal"
+            android:nestedScrollingEnabled="false"
+            android:layout_below="@id/media"/>
+
+        </RelativeLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+
+
+</RelativeLayout>

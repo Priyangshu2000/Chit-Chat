@@ -6,31 +6,63 @@
     android:layout_height="match_parent"
     tools:context=".Contacts">
 
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="@id/heading"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="20dp"
+        app:layout_constraintBottom_toBottomOf="@id/contactNumber"
+        android:id="@+id/backButton"
+        android:gravity="center_vertical"
+        android:src="@drawable/ic_baseline_arrow_back_ios_24" />
 
     <TextView
         android:layout_width="wrap_content"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:text="Contacts"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="10dp"
         android:id="@+id/heading"
         android:gravity="center_vertical"
-        android:layout_marginStart="30dp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        android:textSize="30sp"
+        android:layout_marginStart="10dp"
+        app:layout_constraintStart_toEndOf="@id/backButton"
+        android:textSize="23sp"
         app:layout_constraintTop_toTopOf="parent"
         android:fontFamily="@font/brand_font"
-        android:textColor="@color/black"/>
+        android:textColor="#101010"/>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0 contacts"
+        android:id="@+id/contactNumber"
+        android:layout_marginStart="5dp"
+        app:layout_constraintStart_toStartOf="@id/heading"
+        app:layout_constraintTop_toBottomOf="@id/heading"
+        android:textSize="12sp"
+        android:textColor="#101010"/>
+
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.4dp"
+        android:id="@+id/view"
+        android:elevation="6dp"
+        android:layout_marginTop="3dp"
+        android:background="#54292A60"
+        app:layout_constraintTop_toBottomOf="@id/contactNumber"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
 
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/heading"
+        app:layout_constraintTop_toBottomOf="@id/view"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_margin="10dp"
+        android:layout_margin="3dp"
         android:id="@+id/chatRecyclerView"/>
 
    <ProgressBar
@@ -41,5 +73,17 @@
        app:layout_constraintBottom_toBottomOf="parent"
        app:layout_constraintEnd_toEndOf="parent"
        app:layout_constraintStart_toStartOf="parent"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Contacts using Chit Chat will appear here"
+        android:textSize="18sp"
+        android:id="@+id/emptyText"
+        android:textColor="#959393"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

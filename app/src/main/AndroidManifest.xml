@@ -15,6 +15,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WeChat">
         <activity
+            android:name=".UserProfile"
+            android:exported="false" />
+        <activity
+            android:name=".FriendProfile"
+            android:exported="false" />
+        <activity
             android:name=".personalChat"
             android:exported="false" />
         <activity

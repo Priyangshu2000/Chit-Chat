@@ -6,31 +6,27 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 
 import android.annotation.SuppressLint;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import com.example.wechat.Adapters.PersonalChatAdapter;
 import com.example.wechat.FirebaseModelClass.chats;
 import com.example.wechat.databinding.ActivityPersonalChatBinding;
-import com.google.android.gms.auth.api.signin.internal.Storage;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.Firebase;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -41,27 +37,34 @@ import com.squareup.picasso.Picasso;
 import com.vanniktech.emoji.EmojiPopup;
 import com.vanniktech.emoji.EmojiTextView;
 
-import java.text.ParseException;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Locale;
-import java.util.UUID;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class personalChat extends AppCompatActivity {
 
     ActivityPersonalChatBinding personalChatBinding;
-    final private int mInterval = 1000*60;
-    String ReceiverName, ReceiverPhone,profilePic;
+    final private int mInterval = 1000 * 60;
+    String ReceiverName, ReceiverPhone, profilePic;
     PersonalChatAdapter adapter;
 
     String SenderPhone;
-    ArrayList<chats>allChats;
+    ArrayList<chats> allChats;
 
     SharedPreferences sharedPreferences;
 
@@ -71,35 +74,39 @@ public class personalChat extends AppCompatActivity {
     DatabaseReference ref;
 
 
-   private ValueEventListener valueEventListener;
+    private ValueEventListener valueEventListener;
     DatabaseReference seenRef;
 
     Uri imageuri;
     ActivityResultLauncher<String> activityResultLauncher;
+    boolean chatVisible=true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        personalChatBinding=ActivityPersonalChatBinding.inflate(getLayoutInflater());
+        personalChatBinding = ActivityPersonalChatBinding.inflate(getLayoutInflater());
         setContentView(personalChatBinding.getRoot());
+
 
         getWindow().setStatusBarColor(Color.parseColor("#edefe3"));
         getWindow().setNavigationBarColor(Color.parseColor("#edefe3"));
 
-        sharedPreferences=getSharedPreferences("LastSeen",MODE_PRIVATE);
-        allChats=new ArrayList<>();
+        sharedPreferences = getSharedPreferences("LastSeen", MODE_PRIVATE);
+        allChats = new ArrayList<>();
 
 
 //        popup = EmojiPopup.Builder.fromRootView(findViewById(R.id.root)).build(personalChatBinding.emojiButton);
 
-        popup = new EmojiPopup(personalChatBinding.root,personalChatBinding.messageBox);
+        popup = new EmojiPopup(personalChatBinding.root, personalChatBinding.messageBox);
 
         loadData();
         setData();
         onClickListener();
 
-        seenRef=FirebaseDatabase.getInstance().getReference("Chats").child(ReceiverPhone+SenderPhone);
-        valueEventListener=new ValueEventListener() {
+        addToRecentChats();
+
+        seenRef = FirebaseDatabase.getInstance().getReference("Chats").child(ReceiverPhone + SenderPhone);
+        valueEventListener = new ValueEventListener() {
 
             @SuppressLint("NotifyDataSetChanged")
             @Override
@@ -109,11 +116,11 @@ public class personalChat extends AppCompatActivity {
 
                 allChats.clear();
 
-                for(DataSnapshot dataSnapshot:snapshot.getChildren()){
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
 
-                    chats c=dataSnapshot.getValue(chats.class);
-                    String val=dataSnapshot.getKey();
-                    if(c.getMsgSender().equals(ReceiverPhone))
+                    chats c = dataSnapshot.getValue(chats.class);
+                    String val = dataSnapshot.getKey();
+                    if (c.getMsgSender().equals(ReceiverPhone))
                         seenRef.child(val).child("hasSeen").setValue("Seen");
                     allChats.add(c);
 
@@ -131,60 +138,71 @@ public class personalChat extends AppCompatActivity {
 
 
         loadChats();
-        addToRecentChats();
+
 
 
     }
 
     private void addToRecentChats() {
 
-        DatabaseReference msg=FirebaseDatabase.getInstance().getReference("Messages");
+        DatabaseReference msg = FirebaseDatabase.getInstance().getReference("Messages");
 
-        DatabaseReference reference= FirebaseDatabase.getInstance().getReference("Chats").child(SenderPhone+ReceiverPhone);
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Chats").child(ReceiverPhone + SenderPhone);
 
-        Log.d("today",ref.toString());
-       reference.orderByKey().limitToLast(1).addChildEventListener(new ChildEventListener() {
-           @Override
-           public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                   chats ch=snapshot.getValue(chats.class);
-                   if(!SenderPhone.equals(ch.getMsgReceiver())){
-                       msg.child(SenderPhone).child(ch.getMsgReceiver()).setValue(ch);}
-                   if(!ReceiverPhone.equals(ch.getMsgSender())){
-                       msg.child(ReceiverPhone).child(ch.getMsgSender()).setValue(ch);
-                   }
 
-           }
+        reference.orderByKey().limitToLast(1).addChildEventListener(new ChildEventListener() {
 
-           @Override
-           public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
 
-           }
 
-           @Override
-           public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                chats ch = snapshot.getValue(chats.class);
+                if (!SenderPhone.equals(ch.getMsgReceiver())) {
+                    msg.child(SenderPhone).child(ch.getMsgReceiver()).setValue(ch);
+                }
+                if (!ReceiverPhone.equals(ch.getMsgSender())) {
+                    msg.child(ReceiverPhone).child(ch.getMsgSender()).setValue(ch);
+                }
+            }
 
-           }
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
 
-           @Override
-           public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                Log.d("today", "Inside msg event listener!!!");
 
-           }
+                chats ch = snapshot.getValue(chats.class);
+                if (SenderPhone.equals(ch.getMsgReceiver())) {
+                    msg.child(SenderPhone).child(ch.getMsgSender()).setValue(ch);
+                }
+                if (ReceiverPhone.equals(ch.getMsgSender())) {
+                    msg.child(ReceiverPhone).child(ch.getMsgReceiver()).setValue(ch);
+                }
+            }
 
-           @Override
-           public void onCancelled(@NonNull DatabaseError error) {
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
 
-           }
-       });
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
 
 
     }
 
 
-
     private EmojiTextView getEmojiTextView() {
         EmojiTextView tvEmoji = (EmojiTextView) LayoutInflater
                 .from(getApplicationContext())
-                .inflate(R.layout.emoji_text_view,personalChatBinding.root,false);
+                .inflate(R.layout.emoji_text_view, personalChatBinding.root, false);
         tvEmoji.setText(personalChatBinding.messageBox.getText().toString());
         return tvEmoji;
     }
@@ -209,23 +227,27 @@ public class personalChat extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                if(personalChatBinding.messageBox.getText().toString().length()==0){
+                if (personalChatBinding.messageBox.getText().toString().length() == 0) {
                     Toast.makeText(personalChat.this, "Please type some message", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 //collect Message
-                chats chat=getChats();
+                chats chat = getChats();
 
                 personalChatBinding.messageBox.setText("");
 
-                DatabaseReference ref=FirebaseDatabase.getInstance().getReference("Chats");
-                ref.child(SenderPhone+ReceiverPhone).child(chat.getMsgId()).setValue(chat).addOnSuccessListener(new OnSuccessListener<Void>() {
+                DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Chats");
+                ref.child(SenderPhone + ReceiverPhone).child(chat.getMsgId()).setValue(chat).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
 
-                        if(!SenderPhone.equals(ReceiverPhone)){
-                            ref.child(ReceiverPhone+SenderPhone).child(chat.getMsgId()).setValue(chat);
+                        if (!SenderPhone.equals(ReceiverPhone)) {
+                            ref.child(ReceiverPhone + SenderPhone).child(chat.getMsgId()).setValue(chat);
+
+
+//                            sendNotification(chat);
+
 
                         }
 
@@ -235,59 +257,120 @@ public class personalChat extends AppCompatActivity {
             }
         });
 
-        personalChatBinding.attach.setOnClickListener(new View.OnClickListener() {
+//        personalChatBinding.attach.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                pickImage();
+//                activityResultLauncher.launch("image/*");
+//                personalChatBinding.messageBox.setText(imageuri.toString());
+//            }
+//        });
+
+        personalChatBinding.backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pickImage();
-                activityResultLauncher.launch("image/*");
-                personalChatBinding.messageBox.setText(imageuri.toString());
+                getOnBackPressedDispatcher().onBackPressed();
+            }
+        });
+
+        personalChatBinding.popup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                PopupMenu popupMenu = new PopupMenu(personalChat.this,personalChatBinding.popup);
+                popupMenu.getMenuInflater().inflate(R.menu.popup, popupMenu.getMenu());
+
+                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem menuItem) {
+                        int id=menuItem.getItemId();
+
+
+                        switch (id){
+                            case R.id.hideChat:
+                                personalChatBinding.recyclerView.setVisibility(View.INVISIBLE);
+                                return true;
+
+                            case R.id.showChat:
+                                personalChatBinding.recyclerView.setVisibility(View.VISIBLE);
+                                return true;
+
+                            default:
+                                Intent intent=new Intent(personalChat.this,FriendProfile.class);
+                                intent.putExtra("name",ReceiverName);
+                                intent.putExtra("phone",ReceiverPhone);
+                                startActivity(intent);
+                                return true;
+                        }
+                    }
+
+                });
+
+                if(personalChatBinding.recyclerView.getVisibility()==View.INVISIBLE){
+                    popupMenu.getMenu().getItem(0).setVisible(false);
+                    popupMenu.getMenu().getItem(1).setVisible(true);
+                    chatVisible=true;
+                }else {
+                    popupMenu.getMenu().getItem(0).setVisible(true);
+                    popupMenu.getMenu().getItem(1).setVisible(false);
+                    chatVisible=false;
+                }
+
+                popupMenu.show();
+            }
+        });
+
+        personalChatBinding.userNameLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent=new Intent(personalChat.this,FriendProfile.class);
+                intent.putExtra("name",ReceiverName);
+                intent.putExtra("phone",ReceiverPhone);
+                startActivity(intent);
             }
         });
 
     }
 
-    private void pickImage(){
-        activityResultLauncher=registerForActivityResult(new ActivityResultContracts.GetContent(),new ActivityResultCallback<Uri>(){
+
+    private void pickImage() {
+        activityResultLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(), new ActivityResultCallback<Uri>() {
             @Override
             public void onActivityResult(Uri result) {
-                imageuri=result;
+                imageuri = result;
             }
         });
     }
-
-
 
 
     private chats getChats() {
-        String msgValue=personalChatBinding.messageBox.getText().toString();
+        String msgValue = personalChatBinding.messageBox.getText().toString();
 
 //        convertToUnicode();
 
-        String currTime=String.valueOf(System.currentTimeMillis());
+        String currTime = String.valueOf(System.currentTimeMillis());
         String msgId = String.valueOf(System.currentTimeMillis());
-        String msgReceiver=ReceiverPhone;
-        String msgSender=SenderPhone;
-        String msgType="text";
-        chats chat=new chats(msgId,msgReceiver,msgSender,currTime,msgType,msgValue,"Delivered");
+        String msgReceiver = ReceiverPhone;
+        String msgSender = SenderPhone;
+        String msgType = "text";
+        chats chat = new chats(msgId, msgReceiver, msgSender, currTime, msgType, msgValue, "Delivered");
         return chat;
     }
 
     private void convertToUnicode() {
-       String ans= "\\u" + Integer.toHexString('÷' | 0x10000).substring(1);
+        String ans = "\\u" + Integer.toHexString('÷' | 0x10000).substring(1);
     }
 
     private void loadChats() {
 
-        LinearLayoutManager manager=new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,true);
-        adapter=new PersonalChatAdapter(allChats,this, SenderPhone);
+        LinearLayoutManager manager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, true);
+        adapter = new PersonalChatAdapter(allChats, this, SenderPhone);
         personalChatBinding.recyclerView.setAdapter(adapter);
         personalChatBinding.recyclerView.setLayoutManager(manager);
 
 
+        Log.d("testing", ReceiverPhone + SenderPhone);
 
-        Log.d("testing",ReceiverPhone+SenderPhone);
-
-        ref= FirebaseDatabase.getInstance().getReference("Chats").child(SenderPhone+ReceiverPhone);
+        ref = FirebaseDatabase.getInstance().getReference("Chats").child(SenderPhone + ReceiverPhone);
 
 
         ref.addValueEventListener(valueEventListener);
@@ -295,24 +378,33 @@ public class personalChat extends AppCompatActivity {
     }
 
     private void setData() {
+
         personalChatBinding.name.setText(ReceiverName);
+
+//        if(!chatVisible){
+//            personalChatBinding.recyclerView.setVisibility(View.INVISIBLE);
+//        }else{
+//            personalChatBinding.recyclerView.setVisibility(View.VISIBLE);
+//        }
+
     }
 
+
     private void loadData() {
-        Intent intent=getIntent();
-        ReceiverPhone =intent.getStringExtra("contactNumber");
-        SharedPreferences sp=getSharedPreferences("ContactDetails",MODE_PRIVATE);
+        Intent intent = getIntent();
+        ReceiverPhone = intent.getStringExtra("contactNumber");
+        SharedPreferences sp = getSharedPreferences("ContactDetails", MODE_PRIVATE);
 
-        SharedPreferences ssp=getSharedPreferences("CurrentUser",MODE_PRIVATE);
-        SenderPhone=ssp.getString("phone","");
+        SharedPreferences ssp = getSharedPreferences("CurrentUser", MODE_PRIVATE);
+        SenderPhone = ssp.getString("phone", "");
 
-        ReceiverName =sp.getString(ReceiverPhone, ReceiverPhone);
+        ReceiverName = sp.getString(ReceiverPhone, ReceiverPhone);
         getStatus();
 
     }
 
     private void getStatus() {
-        DatabaseReference ref= FirebaseDatabase.getInstance().getReference("Users").child(ReceiverPhone);
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users").child(ReceiverPhone);
         ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -321,11 +413,11 @@ public class personalChat extends AppCompatActivity {
 
                 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-dd-MM");
                 LocalDate now = LocalDate.now();
-                String today=dtf.format(now);
+                String today = dtf.format(now);
 
-                LocalDateTime dateTime=LocalDateTime.of(now,LocalTime.parse("00:00:00"));
+                LocalDateTime dateTime = LocalDateTime.of(now, LocalTime.parse("00:00:00"));
 
-                long todayTime=dateTime.atZone(ZoneId.systemDefault()).toEpochSecond();
+                long todayTime = dateTime.atZone(ZoneId.systemDefault()).toEpochSecond();
 
 //                try {
 //                    todayTime=new java.text.SimpleDateFormat("MM/dd/YYYY HH:mm:ss").parse(today+ " 23:59:00").getTime();
@@ -334,28 +426,27 @@ public class personalChat extends AppCompatActivity {
 //                    throw new RuntimeException(e);
 //                }
 
-                Log.d("Today",String.valueOf(todayTime));
+                Log.d("Today", String.valueOf(todayTime));
 //                Toast.makeText(context, String.valueOf(time), Toast.LENGTH_SHORT).show();
-                if(-time+System.currentTimeMillis()<=60000){
+                if (-time + System.currentTimeMillis() <= 60000) {
                     personalChatBinding.status.setText("online");
-                }else{
+                } else {
 
-                    String pattern="hh:mm a";
-                    if(time-todayTime*1000<0){
-                        pattern="dd/MM/YYYY hh:mm a";
+                    String pattern = "hh:mm a";
+                    if (time - todayTime * 1000 < 0) {
+                        pattern = "dd/MM/YYYY hh:mm a";
                     }
 
 
                     String lastSeen = new java.text.SimpleDateFormat(pattern, Locale.getDefault()).format(new java.util.Date(Long.valueOf(time)));
 
-                    personalChatBinding.status.setText("Last Seen : "+lastSeen);
-
+                    personalChatBinding.status.setText("Last Seen : " + lastSeen);
 
 
                 }
 
                 String pic = snapshot.child("profilePic").getValue(String.class);
-                profilePic=pic;
+                profilePic = pic;
                 Picasso.get().load(snapshot.child("profilePic").getValue(String.class)).into(personalChatBinding.profilePic);
             }
 
@@ -409,5 +500,95 @@ public class personalChat extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+    }
+
+    private void sendNotification(chats chat) {
+
+
+        FirebaseDatabase.getInstance().getReference("Users").child(ReceiverPhone).addListenerForSingleValueEvent(new ValueEventListener() {
+            String receiverToken;
+
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                receiverToken = snapshot.child("fcmToken").getValue(String.class);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            sendPostRequest(receiverToken,chat);
+                        } catch (JSONException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }).start();
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void sendPostRequest(String receiverToken,chats chat) throws JSONException {
+        final OkHttpClient client = new OkHttpClient();
+
+
+
+        JSONObject object=new JSONObject();
+        object.put("to",receiverToken);
+
+
+
+        JSONObject notif=new JSONObject();
+        notif.put("title",ReceiverName);
+        notif.put("body",chat.getMsgValue());
+        notif.put("image","");
+
+        object.put("notification",notif);
+
+
+        String req=object.toString();
+
+        Log.d(Constants.TAG,req);
+
+        MediaType type = MediaType.parse("application/json; charset=utf-8");
+
+        RequestBody body = RequestBody.create(req, type);
+
+        Request request = new Request.Builder()
+                .url("https://fcm.googleapis.com/fcm/send")
+                .header("User-Agent", "OkHttp Headers.java")
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Authorization", "key=" + Constants.SERVER_KEY)
+                .post(body)
+                .build();
+
+        Log.d(Constants.TAG,"here");
+
+        try (Response response = client.newCall(request).execute()) {
+
+            if (!response.isSuccessful()) {
+                Log.d(Constants.TAG, response.toString());
+            } else {
+                Log.d(Constants.TAG, "Successful");
+            }
+        } catch (IOException e) {
+            Log.d(Constants.TAG, "Catch Exception");
+        }
+
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle state) {
+        super.onSaveInstanceState(state);
+        state.putBoolean("isVisible",chatVisible);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle state) {
+        super.onRestoreInstanceState(state);
+        chatVisible=state.getBoolean("isVisible");
     }
 }

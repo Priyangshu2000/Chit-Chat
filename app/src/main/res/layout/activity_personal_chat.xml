@@ -9,7 +9,7 @@
     android:background="#edefe3"
     android:fitsSystemWindows="true"
     tools:context=".personalChat">
-<Toolbar
+<androidx.appcompat.widget.Toolbar
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:id="@+id/toolbar"
@@ -47,6 +47,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="15dp"
             android:orientation="vertical"
+            android:id="@+id/userNameLayout"
             android:layout_centerVertical="true"
             android:layout_toRightOf="@id/profilePic">
         <TextView
@@ -87,7 +88,7 @@
             android:id="@+id/popup"
             />
     </RelativeLayout>
-</Toolbar>
+</androidx.appcompat.widget.Toolbar>
     <View
         android:layout_width="wrap_content"
         android:layout_height="1dp"
@@ -157,6 +158,7 @@
             android:background="@android:color/transparent"
             android:fontFamily="@font/brand_font"
             android:hint="Enter Message"
+            android:inputType="textCapSentences"
             android:maxLines="6"/>
 
         <ImageView

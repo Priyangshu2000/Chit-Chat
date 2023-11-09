@@ -75,6 +75,14 @@ public class Contacts extends AppCompatActivity {
             }
         };
         contactsActivity.chatRecyclerView.addOnItemTouchListener(listener);
+
+        contactsActivity.backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getOnBackPressedDispatcher().onBackPressed();
+            }
+        });
+
     }
 
     private void saveToSharedPreference() {
@@ -88,6 +96,7 @@ public class Contacts extends AppCompatActivity {
     }
 
     private void loadContacts() {
+        if(list.size()!=0)contactsActivity.emptyText.setVisibility(View.GONE);
         adapter=new ContactAdapter(list);
         contactsActivity.chatRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         contactsActivity.chatRecyclerView.setAdapter(adapter);
@@ -136,6 +145,11 @@ public class Contacts extends AppCompatActivity {
             }
         }
 
+        contactsActivity.contactNumber.setVisibility(View.VISIBLE);
+
+        String number=list.size()+" contacts";
+        contactsActivity.contactNumber.setText(number);
+
         sort(list);
 
         loadContacts();
@@ -150,6 +164,7 @@ public class Contacts extends AppCompatActivity {
 
     private void FetchContacts(){
         contactsActivity.progressBar.setVisibility(View.VISIBLE);
+        contactsActivity.contactNumber.setVisibility(View.GONE);
         DatabaseReference reference=FirebaseDatabase.getInstance().getReference("Users");
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
